@@ -144,16 +144,29 @@ func numDigits(i int) int {
 	}
 }
 
-// This can be set by a build script.
+// This can be set by a build script. It will be the colon separated equivalent
+// of the environment variable.
 var gopath string
-var envGopath []string
+
+// This is the processed version based on either the above variable set by the
+// build or from the GOPATH environment variable.
+var gopaths []string
 
 func init() {
-	for _, p := range strings.Split(os.Getenv("GOPATH"), ":") {
+	// prefer the variable set at build time, otherwise fallback to the
+	// environment variable.
+	if gopath == "" {
+		gopath = os.Getenv("GOPATH")
+	}
+
+	for _, p := range strings.Split(gopath, ":") {
 		if p != "" {
-			envGopath = append(envGopath, filepath.Join(p, "src")+"/")
+			gopaths = append(gopaths, filepath.Join(p, "src")+"/")
 		}
 	}
+
+	// Also strip GOROOT for maximum cleanliness
+	gopaths = append(gopaths, filepath.Join(runtime.GOROOT(), "src", "pkg")+"/")
 }
 
 // StripGOPATH strips the GOPATH prefix from the file path f.
@@ -164,16 +177,7 @@ func init() {
 //     GO_LDFLAGS="$GO_LDFLAGS -X github.com/facebookgo/stack.gopath $GOPATH"
 //     go install "-ldflags=$GO_LDFLAGS" my/pkg
 func StripGOPATH(f string) string {
-	// If gopath is set, we're running a production build.
-	if gopath != "" {
-		if strings.HasPrefix(f, gopath) {
-			return f[len(gopath):]
-		}
-		return f
-	}
-
-	// Otherwise strip based on GOPATH env variable.
-	for _, p := range envGopath {
+	for _, p := range gopaths {
 		if strings.HasPrefix(f, p) {
 			return f[len(p):]
 		}
