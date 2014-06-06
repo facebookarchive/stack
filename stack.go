@@ -75,10 +75,8 @@ func (m *Multi) String() string {
 // Caller returns a single Frame for the caller. The argument skip is the
 // number of stack frames to ascend, with 0 identifying the caller of Callers.
 func Caller(skip int) Frame {
-	pcs := make([]uintptr, maxStackSize)
-	runtime.Callers(skip+2, pcs)
-	fun := runtime.FuncForPC(pcs[0])
-	file, line := fun.FileLine(pcs[0])
+	pc, file, line, _ := runtime.Caller(skip + 1)
+	fun := runtime.FuncForPC(pc)
 	return Frame{
 		File: StripGOPATH(file),
 		Line: line,
