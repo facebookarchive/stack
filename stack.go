@@ -2,6 +2,21 @@
 //
 // This is useful for building errors that know where they originated from, to
 // track where a certain log event occured and so on.
+//
+// The package provides stack.Multi which represents a sequence of stack
+// traces. Since in Go we return errors they don't necessarily end up with a
+// single useful stack trace. For example an error may be going thru a channel
+// across goroutines, in which case we may want to capture a stack trace in
+// both (or many) goroutines. stack.Multi in turn is made up of stack.Stack,
+// which is a set of stack.Frames. Each stack.Frame contains the File/Line/Name
+// (function name). All these types implement a pretty human readable String()
+// function.
+//
+// The GOPATH is stripped from the File location. Look at the StripGOPATH
+// function on instructions for how to embed to GOPATH into the binary for when
+// deploying to production and the GOPATH environment variable may not be set.
+// The package name is stripped from the Name of the function since it included
+// in the File location.
 package stack
 
 import (
