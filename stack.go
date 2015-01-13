@@ -26,7 +26,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"sync"
 )
 
 const maxStackSize = 32
@@ -88,6 +87,15 @@ func (m *Multi) String() string {
 	return b.String()
 }
 
+// Copy makes a copy of the stack which is safe to modify.
+func (m *Multi) Copy() *Multi {
+	m2 := &Multi{
+		stacks: make([]Stack, len(m.stacks)),
+	}
+	copy(m2.stacks, m.stacks)
+	return m2
+}
+
 // Caller returns a single Frame for the caller. The argument skip is the
 // number of stack frames to ascend, with 0 identifying the caller of Callers.
 func Caller(skip int) Frame {
@@ -100,16 +108,10 @@ func Caller(skip int) Frame {
 	}
 }
 
-var pcsPool = sync.Pool{
-	New: func() interface{} {
-		return make([]uintptr, maxStackSize)
-	},
-}
-
 // Callers returns a Stack of Frames for the callers. The argument skip is the
 // number of stack frames to ascend, with 0 identifying the caller of Callers.
 func Callers(skip int) Stack {
-	pcs := pcsPool.Get().([]uintptr)
+	pcs := make([]uintptr, maxStackSize)
 	num := runtime.Callers(skip+2, pcs)
 	stack := make(Stack, num)
 	for i, pc := range pcs[:num] {
@@ -119,8 +121,6 @@ func Callers(skip int) Stack {
 		stack[i].Line = line
 		stack[i].Name = StripPackage(fun.Name())
 	}
-	pcs = pcs[0:]
-	pcsPool.Put(pcs)
 	return stack
 }
 
