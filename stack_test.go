@@ -23,20 +23,20 @@ func indirect3() stack.Stack {
 func TestCallers(t *testing.T) {
 	s := indirect3()
 	matches := []string{
-		"^github.com/facebookgo/stack/stack_test.go:12 +indirect1$",
-		"^github.com/facebookgo/stack/stack_test.go:16 +indirect2$",
-		"^github.com/facebookgo/stack/stack_test.go:20 +indirect3$",
-		"^github.com/facebookgo/stack/stack_test.go:24 +TestCallers$",
+		"stack_test.go:12 +indirect1$",
+		"stack_test.go:16 +indirect2$",
+		"stack_test.go:20 +indirect3$",
+		"stack_test.go:24 +TestCallers$",
 	}
 	match(t, s.String(), matches)
 }
 
 func TestCallersMulti(t *testing.T) {
 	m := stack.CallersMulti(0)
-	const expected = "github.com/facebookgo/stack/stack_test.go:35 TestCallersMulti"
+	const expected = "stack_test.go:35 TestCallersMulti"
 	first := m.Stacks()[0][0].String()
-	if first != expected {
-		t.Fatalf(`expected "%s" got "%s"`, expected, first)
+	if !strings.HasSuffix(first, expected) {
+		t.Fatalf(`expected suffix "%s" got "%s"`, expected, first)
 	}
 }
 
@@ -44,11 +44,11 @@ func TestCallersMultiWithTwo(t *testing.T) {
 	m := stack.CallersMulti(0)
 	m.AddCallers(0)
 	matches := []string{
-		"^github.com/facebookgo/stack/stack_test.go:44 +TestCallersMultiWithTwo$",
+		"stack_test.go:44 +TestCallersMultiWithTwo$",
 		"",
 		"",
-		`^\(Stack 2\)$`,
-		"^github.com/facebookgo/stack/stack_test.go:46 +TestCallersMultiWithTwo$",
+		`\(Stack 2\)$`,
+		"stack_test.go:46 +TestCallersMultiWithTwo$",
 	}
 	match(t, m.String(), matches)
 }
@@ -71,19 +71,19 @@ func TestCallersWithStruct(t *testing.T) {
 	var m typ
 	s := m.indirect3()
 	matches := []string{
-		"^github.com/facebookgo/stack/stack_test.go:59 +typ.indirect1$",
-		"^github.com/facebookgo/stack/stack_test.go:63 +typ.indirect2$",
-		"^github.com/facebookgo/stack/stack_test.go:67 +typ.indirect3$",
-		"^github.com/facebookgo/stack/stack_test.go:72 +TestCallersWithStruct$",
+		"stack_test.go:59 +typ.indirect1$",
+		"stack_test.go:63 +typ.indirect2$",
+		"stack_test.go:67 +typ.indirect3$",
+		"stack_test.go:72 +TestCallersWithStruct$",
 	}
 	match(t, s.String(), matches)
 }
 
 func TestCaller(t *testing.T) {
 	f := stack.Caller(0)
-	const expected = "github.com/facebookgo/stack/stack_test.go:83 TestCaller"
-	if f.String() != expected {
-		t.Fatalf(`expected "%s" got "%s"`, expected, f)
+	const expected = "stack_test.go:83 TestCaller"
+	if !strings.HasSuffix(f.String(), expected) {
+		t.Fatalf(`expected suffix "%s" got "%s"`, expected, f)
 	}
 }
 
