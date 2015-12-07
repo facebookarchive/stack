@@ -116,7 +116,7 @@ func Callers(skip int) Stack {
 	stack := make(Stack, num)
 	for i, pc := range pcs[:num] {
 		fun := runtime.FuncForPC(pc)
-		file, line := fun.FileLine(pc)
+		file, line := fun.FileLine(pc - 1)
 		stack[i].File = StripGOPATH(file)
 		stack[i].Line = line
 		stack[i].Name = StripPackage(fun.Name())
